@@ -6,6 +6,8 @@ import re
 import json
 
 
+data = []
+
 code_df = pd.read_html('http://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13', header=0)[0]
 
 # 종목코드가 6자리이기 때문에 6자리를 맞춰주기 위해 설정해줌
@@ -50,44 +52,45 @@ def get_param(url):
     html = requests.get(url).text
     encparam = re.findall("encparam: '(.*?)'", html)[0]
     encid = re.findall("id: '(.*?)'", html)[0]
-    print(encparam)
-    print(encid)
 
     return encparam, encid
 
+for name in code_df['name']:
+    try:
+        print(name)
+        # 입력한 주식의 일자데이터 url 가져오기
+        item_name = name
 
-# 입력한 주식의 일자데이터 url 가져오기
-item_name = '셀트리온'
+        url1 = get_url(item_name, code_df)
 
-url1 = get_url(item_name, code_df)
 
-# 일자 데이터를 담을 df라는 DataFrame 정의
-df = pd.DataFrame()
-df_stock = pd.DataFrame()
-data = []
-date = datetime.date.today()
-name = item_name
-code = code_df.query("name=='{}'".format(item_name))['code'].to_string(index=False)
-parse1 = get_html(url1)
-PER = float(parse1.select('#pArea > div.wrapper-table > div > table > tr:nth-of-type(3) > td > dl > dt:nth-of-type(3) > b')[0].text)
-PBR = float(parse1.select('#pArea > div.wrapper-table > div > table > tr:nth-of-type(3) > td > dl > dt:nth-of-type(5) > b')[0].text)
-BPS = float(parse1.select('#pArea > div.wrapper-table > div > table > tr:nth-of-type(3) > td > dl > dt:nth-of-type(2) > b')[0].text.replace(',', ''))
-EPS = float(parse1.select('#pArea > div.wrapper-table > div > table > tr:nth-of-type(3) > td > dl > dt:nth-of-type(1) > b')[0].text.replace(',', ''))
-high = float(parse1.select('#cTB11 > tbody > tr:nth-of-type(2) > td')[0].get_text().strip().replace('\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t', '').replace(' ', '').replace('원', '').replace(',', '').split('/')[0])
-low = float(parse1.select('#cTB11 > tbody > tr:nth-of-type(2) > td')[0].get_text().strip().replace('\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t', '').replace(' ', '').replace('원', '').replace(',', '').split('/')[1])
-price = float(parse1.select('#cTB11 > tbody > tr:nth-of-type(1) > td > strong')[0].get_text().strip().replace(',', ''))
-json_table = get_json(item_name, code_df)
-ROE = json_table["DATA"][12]["DATA5"]
-ROA = json_table["DATA"][16]["DATA5"]
-ROIC = json_table["DATA"][20]["DATA5"]
+        date = datetime.date.today()
+        name = item_name
+        code = code_df.query("name=='{}'".format(item_name))['code'].to_string(index=False)
+        parse1 = get_html(url1)
+        PER = float(parse1.select('#pArea > div.wrapper-table > div > table > tr:nth-of-type(3) > td > dl > dt:nth-of-type(3) > b')[0].text)
+        PBR = float(parse1.select('#pArea > div.wrapper-table > div > table > tr:nth-of-type(3) > td > dl > dt:nth-of-type(5) > b')[0].text)
+        BPS = float(parse1.select('#pArea > div.wrapper-table > div > table > tr:nth-of-type(3) > td > dl > dt:nth-of-type(2) > b')[0].text.replace(',', ''))
+        EPS = float(parse1.select('#pArea > div.wrapper-table > div > table > tr:nth-of-type(3) > td > dl > dt:nth-of-type(1) > b')[0].text.replace(',', ''))
+        high = float(parse1.select('#cTB11 > tbody > tr:nth-of-type(2) > td')[0].get_text().strip().replace('\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t', '').replace(' ', '').replace('원', '').replace(',', '').split('/')[0])
+        low = float(parse1.select('#cTB11 > tbody > tr:nth-of-type(2) > td')[0].get_text().strip().replace('\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t', '').replace(' ', '').replace('원', '').replace(',', '').split('/')[1])
+        price = float(parse1.select('#cTB11 > tbody > tr:nth-of-type(1) > td > strong')[0].get_text().strip().replace(',', ''))
+        json_table = get_json(item_name, code_df)
+        ROE = json_table["DATA"][12]["DATA5"]
+        ROA = json_table["DATA"][16]["DATA5"]
+        ROIC = json_table["DATA"][20]["DATA5"]
 
-data.extend((date, name, code, PER, PBR, BPS, EPS, high, low, price, ROA, ROE, ROIC))
+        data.append([date, name, code, PER, PBR, BPS, EPS, high, low, price, ROA, ROE, ROIC])
+    except:
+        print('Error' + name)
+
+
 print(data)
 
 
+# 일자 데이터를 담을 df라는 DataFrame 정의
+df = pd.DataFrame()
+#df_stock = pd.DataFrame(data)
+df_stock = pd.DataFrame(data, columns = ['date', 'name', 'code', 'PER', 'PBR', 'BPS', 'EPS', '52_high', '52_low', 'price', 'ROA', 'ROE', 'ROIC'])
 
-
-# df_stock = df.rename(columns = ['date', 'name', 'code', 'PER', 'PBR', 'BPS', 'EPS', '52_high', '52_low', 'price', 'ROA', 'ROE', 'ROIC'])
-
-
-
+df_stock.to_csv('KRX_stock.csv', mode='a')
