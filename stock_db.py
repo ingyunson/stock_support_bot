@@ -94,3 +94,53 @@ df = pd.DataFrame()
 df_stock = pd.DataFrame(data, columns = ['date', 'name', 'code', 'PER', 'PBR', 'BPS', 'EPS', '52_high', '52_low', 'price', 'ROA', 'ROE', 'ROIC'])
 
 df_stock.to_csv('KRX_stock.csv', mode='a')
+
+
+#주식 재무 데이터 크롤링
+item_name = '삼성전자'
+name = item_name
+code = code_df.query("name=='{}'".format(item_name))['code'].to_string(index=False)
+
+
+def get_finstate_naver(code, fin_type='0', freq_type='Y'):
+    # encparam, encid  추출
+    url_tmpl = 'http://companyinfo.stock.naver.com/v1/company/c1010001.aspx?cmp_cd=%s'
+    url = url_tmpl % ( code)
+    print(url)
+
+    html_text = requests.get(url).text
+    if not re.search("encparam: '(.*?)'", html_text):
+        print('encparam not found')
+        return None
+    encparam = re.findall ("encparam: '(.*?)'", html_text)[0]
+    encid = re.findall ("id: '(.*?)'", html_text)[0]
+    print(encparam, encid)
+
+    #  재무데이터 표 추출
+    url_tmpl = 'http://companyinfo.stock.naver.com/v1/company/ajax/cF1001.aspx?' \
+                    'cmp_cd=%s&fin_typ=%s&freq_typ=%s&encparam=%s&id=%s'
+
+    url = url_tmpl % (code, fin_type, freq_type, encparam, encid)
+    print(url)
+
+    header = {
+        'Referer': 'https://companyinfo.stock.naver.com/v1/company/c1010001.aspx',
+    }
+
+    html_text = requests.get(url, headers=header).text
+
+    return html_text
+
+page = get_finstate_naver(code)
+soup = bs(page, 'html.parser')
+capital = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(25) > td:nth-of-type(5)')[0].text.replace(',',''))
+profit = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(1) > td:nth-of-type(5)')[0].text.replace(',',''))
+self_capital = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(8) > td:nth-of-type(5)')[0].text.replace(',',''))
+base_capital = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(13) > td:nth-of-type(5)')[0].text.replace(',',''))
+debt = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(24) > td:nth-of-type(5)')[0].text.replace(',',''))
+
+
+
+
+
+#df_finance = name / code / capital(자본유보율) / profit(연매출) / self_capital(자기자본=자본총계) / base_capital(자본금) / debt(부채) / 
