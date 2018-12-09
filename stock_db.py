@@ -97,10 +97,7 @@ df_stock.to_csv('KRX_stock.csv', mode='a')
 
 
 #주식 재무 데이터 크롤링
-item_name = '삼성전자'
-name = item_name
-code = code_df.query("name=='{}'".format(item_name))['code'].to_string(index=False)
-
+finance_data = []
 
 def get_finstate_naver(code, fin_type='0', freq_type='Y'):
     # encparam, encid  추출
@@ -131,16 +128,29 @@ def get_finstate_naver(code, fin_type='0', freq_type='Y'):
 
     return html_text
 
-page = get_finstate_naver(code)
-soup = bs(page, 'html.parser')
-capital = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(25) > td:nth-of-type(5)')[0].text.replace(',',''))
-profit = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(1) > td:nth-of-type(5)')[0].text.replace(',',''))
-self_capital = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(8) > td:nth-of-type(5)')[0].text.replace(',',''))
-base_capital = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(13) > td:nth-of-type(5)')[0].text.replace(',',''))
-debt = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(24) > td:nth-of-type(5)')[0].text.replace(',',''))
+
+for name in code_df['name'][0:5]:
+    try:
+        date = datetime.date.today()
+        item_name = name
+        code = code_df.query("name=='{}'".format(item_name))['code'].to_string(index=False)
 
 
 
+        page = get_finstate_naver(code)
+        soup = bs(page, 'html.parser')
+        capital = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(25) > td:nth-of-type(5)')[0].text.replace(',',''))
+        profit = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(1) > td:nth-of-type(5)')[0].text.replace(',',''))
+        self_capital = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(8) > td:nth-of-type(5)')[0].text.replace(',',''))
+        base_capital = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(13) > td:nth-of-type(5)')[0].text.replace(',',''))
+        debt = float(soup.select('tbody:nth-of-type(2) > tr:nth-of-type(24) > td:nth-of-type(5)')[0].text.replace(',',''))
+
+        finance_data.append([date, name, code, capital, profit, self_capital, base_capital, debt])
+    except:
+        print('Error!' + name)
 
 
-#df_finance = name / code / capital(자본유보율) / profit(연매출) / self_capital(자기자본=자본총계) / base_capital(자본금) / debt(부채) / 
+df_finance = pd.DataFrame(finance_data, columns = ['date', 'name', 'code', '자본유보율', '연매출', '자기자본(자본총계)', '자본금', '부채비율'])
+
+
+
