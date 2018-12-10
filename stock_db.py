@@ -152,5 +152,5 @@ for name in code_df['name'][0:5]:
 
 df_finance = pd.DataFrame(finance_data, columns = ['date', 'name', 'code', '자본유보율', '연매출', '자기자본(자본총계)', '자본금', '부채비율'])
 
-
+df_finance.to_csv('KRX_finance.csv', mode='a')
 
