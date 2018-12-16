@@ -31,6 +31,11 @@ bot = telegram.Bot(token=my_token)  # bot을 선언합니다.
 
 updater = Updater(my_token)
 updates = bot.getUpdates()  # 업데이트 내역을 받아옵니다.
+user_id = bot.getUpdates()[-1].message.chat.id
+user_info = [user_id] + finance_condition + stock_condition
+user_data = [user_info]
+df_user = pd.DataFrame(user_data, columns = ['User_id', '자본유보율', '연매출', '부채비율', 'PER', 'PBR', 'ROIC', 'ROE', 'BPS', 'EPS', '수익률'])
+
 
 # 자본유보율, 연매출, 부채비율 조건 조정
 # PER, PBR, ROIC, ROE, BPS, EPS, 수익율
