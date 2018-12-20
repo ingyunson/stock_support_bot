@@ -12,13 +12,13 @@ bot = telegram.Bot(token = my_token)   #bot을 선언합니다.
 updater = Updater(my_token)
 updates = bot.getUpdates()  #업데이트 내역을 받아옵니다.
 
-today_finance = pd.read_csv('KRX_finance.csv'.format(nowDate))
-today_stock = pd.read_csv('KRX_stock.csv'.format(nowDate))
+today_finance = pd.read_csv('{}_KRX_finance.csv'.format(nowDate))
+today_stock = pd.read_csv('{}_KRX_stock.csv'.format(nowDate))
 
 finance_condition = [100, 100, 100] #자본유보율, 연매출, 부채비율 조건 조정
 stock_condition = [10, 10, 10, 10, 10, 10, 10, 10] #PER, PBR, ROIC, ROE, BPS, EPS, 수익율 조절 가능
 user = pd.DataFrame(columns = ['User_id', '자본유보율', '연매출', '부채비율', 'PER', 'PBR', 'ROIC', 'ROE', 'BPS', 'EPS', '수익률'])
-userdata = pd.read_csv('test.csv')
+userdata = pd.read_csv('user_db.csv')
 del userdata['Unnamed: 0']
 
 today = pd.merge(today_finance, today_stock, on = "name")
@@ -27,6 +27,7 @@ del today['Unnamed: 0_y']
 del today['date_y']
 del today['code_y']
 
+today[['자본유보율', '연매출', '자기자본(자본총계)', '자본금', '부채비율', 'PER', 'PBR', 'BPS', 'EPS', '52_high', '52_low', 'price', 'ROA', 'ROE', 'ROIC']] = today[['자본유보율', '연매출', '자기자본(자본총계)', '자본금', '부채비율', 'PER', 'PBR', 'BPS', 'EPS', '52_high', '52_low', 'price', 'ROA', 'ROE', 'ROIC']].apply(pd.to_numeric)
 
 # 챗봇 part
 
@@ -88,11 +89,11 @@ for id in userdata['User_id']:
 
 send_message()
 
-print('chatbot is ready')
+#print('chatbot is ready')
 start_handler = CommandHandler('start', start_command)
 join_handler = CommandHandler('join', join_command)
 updater.dispatcher.add_handler(start_handler)
 updater.dispatcher.add_handler(join_handler)
 
-updater.start_polling()
-updater.idle()
+#updater.start_polling()
+#updater.idle()
