@@ -22,6 +22,8 @@ userdata = pd.read_csv('user_db.csv')
 del userdata['Unnamed: 0']
 
 today = pd.merge(today_finance, today_stock, on = "name")
+today = today.drop_duplicates()
+today = today.reset_index(drop = True)
 del today['Unnamed: 0_x']
 del today['Unnamed: 0_y']
 del today['date_y']
