@@ -1,9 +1,15 @@
+# -*- coding: utf-8 -*-
+
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup as bs
 import datetime
 import re
 import json
+import sys
+import codecs
+
+sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 
 now = datetime.datetime.now()
 nowDate = now.strftime('%Y-%m-%d')
