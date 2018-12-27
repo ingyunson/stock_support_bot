@@ -12,13 +12,12 @@ bot = telegram.Bot(token = my_token)   #bot을 선언합니다.
 updater = Updater(my_token)
 updates = bot.getUpdates()  #업데이트 내역을 받아옵니다.
 
-today_finance = pd.read_csv('{}_KRX_finance.csv'.format(nowDate), dtype={'code':str})
-today_stock = pd.read_csv('{}_KRX_stock.csv'.format(nowDate), dtype={'code':str})
+dir = '/root/chatbot/stock/'
+today_finance = pd.read_csv(dir+'{}_KRX_finance.csv'.format(nowDate), dtype={'code':str})
+today_stock = pd.read_csv(dir+'{}_KRX_stock.csv'.format(nowDate), dtype={'code':str})
 
-finance_condition = [100, 100, 100] #자본유보율, 연매출, 부채비율 조건 조정
-stock_condition = [10, 10, 10, 10, 10, 10, 10, 10] #PER, PBR, ROIC, ROE, BPS, EPS, 수익율 조절 가능
 user = pd.DataFrame(columns = ['User_id', '자본유보율', '연매출', '부채비율', 'PER', 'PBR', 'ROIC', 'ROE', 'BPS', 'EPS', '수익률'])
-userdata = pd.read_csv('user_db.csv')
+userdata = pd.read_csv(dir+'user_db.csv')
 del userdata['Unnamed: 0']
 
 today = pd.merge(today_finance, today_stock, on = "name")
@@ -73,7 +72,7 @@ def send_message():
                                    today['ROIC'] > today['ROA']) & (today['ROE'] > data[7]) & (today['mark'] == True)]
         name = []
         code = []
-        message = []
+        message = ['{}의 선정 주식은 다음과 같습니다.'.format(nowDate)]
         name.append(result['name'].values)
         code.append(result['code_x'].values)
         for num in range(len(name[0])):
@@ -81,13 +80,12 @@ def send_message():
                                                                                                     code=code[0][num])
             message.append(note)
         final = '\n\n'.join(message)
-
     for id in userdata['User_id']:
-        bot.sendMessage(chat_id=id, text=final)
+        try:
+            bot.sendMessage(chat_id=id, text=final)
+        except:
+            bot.sendMessage(chat_id = 68008527, text = id)
 
-
-for id in userdata['User_id']:
-    print(id)
 
 send_message()
 
