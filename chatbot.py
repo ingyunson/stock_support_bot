@@ -61,23 +61,27 @@ def send_message():
         today['EPS_mul'] = today['EPS'] * data[9]
         today['low'] = today[['BPS_mul', 'EPS_mul']].min(axis=1)
         today['A'] = today['low'] * data[10] / 100
+        today['estimate'] = today['low'] + today['A']
         today['mark'] = ((today['low'] + today['A']) < today['52_high']) & (
                     (today['low'] - today['A']) < today['price'])
         today['special'] = ((today['low'] + today['A']) < today['52_low']) & (
                     (today['low'] - today['A']) < today['price'])
-
         result = today[(today['자본유보율'] > data[1]) & (today['연매출'] > data[2]) & (today['부채비율'] < data[3]) & (
                     (((today['자본금'] - today['자기자본(자본총계)']) / today['자본금']) * 100) < 0) & (today['PER'] < data[4]) & (
                                    today['PBR'] < data[5]) & (today['ROIC'] > data[6]) & (
                                    today['ROIC'] > today['ROA']) & (today['ROE'] > data[7]) & (today['mark'] == True)]
         name = []
         code = []
+        price = []
+        estimate = []
         message = ['{}의 선정 주식은 다음과 같습니다.'.format(nowDate)]
         name.append(result['name'].values)
         code.append(result['code_x'].values)
+        price.append(result['price'].values)
+        estimate.append(result['estimate'].values)
         for num in range(len(name[0])):
-            note = "기업명 : {name}\nURL : https://finance.naver.com/item/main.nhn?code={code}".format(name=name[0][num],
-                                                                                                    code=code[0][num])
+            note = "기업명 : {name}\nURL : https://finance.naver.com/item/main.nhn?code={code}\n전일종가 : {price}\n추산 적정가(10%) : {estimate}".format(
+                name=name[0][num], code=code[0][num], price=price[0][num], estimate=estimate[0][num])
             message.append(note)
         final = '\n\n'.join(message)
     for id in userdata['User_id']:
