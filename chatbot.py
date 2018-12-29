@@ -41,16 +41,6 @@ def start_command(bot, update):
     update.message.reply_text("주식 투자 보조용 챗봇입니다.\n'/join' 혹은 '/시작'을 입력하시면 정보를 등록합니다.")
 
 
-def join_command(bot, update):
-    user_id = bot.getUpdates()[-1].message.chat.id
-    print(user_id)
-    user_info = ['a', 100, 100, 100, 10, 10, 10, 10, 10, 10, 10]
-    user_info[0] = user_id
-    update.message.reply_text(
-        "회원 정보를 등록합니다. 회원 정보 및 기본 설정은 다음과 같습니다.\nUser id = {id}\n자본유보율 = {cap}, 연매출 = {ben}, 부채비율 = {debt}\nPER = {per}, PBR = {pbr}, ROIC = {roic}, ROE = {roe}, BPS = {bps}, EPS = {eps}, 수익률 = {earn}".format(
-            id=user_id, cap=user_info[1], ben=user_info[2], debt=user_info[3], per=user_info[4], pbr=user_info[5],
-            roic=user_info[6], roe=user_info[7], bps=user_info[8], eps=user_info[9], earn=user_info[10]))
-
 def send_message():
     for i in range(len(userdata)):
         data = []
@@ -95,9 +85,7 @@ send_message()
 
 #print('chatbot is ready')
 start_handler = CommandHandler('start', start_command)
-join_handler = CommandHandler('join', join_command)
 updater.dispatcher.add_handler(start_handler)
-updater.dispatcher.add_handler(join_handler)
 
 #updater.start_polling()
 #updater.idle()
