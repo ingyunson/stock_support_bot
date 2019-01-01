@@ -36,11 +36,6 @@ today[['자본유보율', '연매출', '자기자본(자본총계)', '자본금'
 # PER, PBR, ROIC, ROE, BPS, EPS, 수익율
 # user_info = [user_id, 자본유보율, 연매출, 부채비율, PER, PBR, ROIC, ROE, BPS, EPS, 수익률]
 
-def start_command(bot, update):
-    print("start")
-    update.message.reply_text("주식 투자 보조용 챗봇입니다.\n'/join' 혹은 '/시작'을 입력하시면 정보를 등록합니다.")
-
-
 def send_message():
     for i in range(len(userdata)):
         data = []
@@ -51,7 +46,8 @@ def send_message():
         today['EPS_mul'] = today['EPS'] * data[9]
         today['low'] = today[['BPS_mul', 'EPS_mul']].min(axis=1)
         today['A'] = today['low'] * data[10] / 100
-        today['estimate'] = today['low'] + today['A']
+        today['sell_estimate'] = today['low'] + today['A']
+        today['buy_estimate'] = today['low'] - today['A']
         today['mark'] = ((today['low'] + today['A']) < today['52_high']) & (
                     (today['low'] - today['A']) < today['price'])
         today['special'] = ((today['low'] + today['A']) < today['52_low']) & (
@@ -63,15 +59,17 @@ def send_message():
         name = []
         code = []
         price = []
-        estimate = []
+        sell_estimate = []
+        buy_estimate = []
         message = ['{}의 선정 주식은 다음과 같습니다.'.format(nowDate)]
         name.append(result['name'].values)
         code.append(result['code_x'].values)
         price.append(result['price'].values)
-        estimate.append(result['estimate'].values)
+        sell_estimate.append(result['sell_estimate'].values)
+        buy_estimate.append(result['buy_estimate'].values)
         for num in range(len(name[0])):
-            note = "기업명 : {name}\nURL : https://finance.naver.com/item/main.nhn?code={code}\n전일종가 : {price}\n추산 적정가(10%) : {estimate}".format(
-                name=name[0][num], code=code[0][num], price=price[0][num], estimate=estimate[0][num])
+            note = "기업명 : {name}\nURL : https://finance.naver.com/item/main.nhn?code={code}\n전일종가 : {price}\n매수 적정가 : {buy_estimate}\n매도 적정가 : {sell_estimate}".format(
+                name=name[0][num], code=code[0][num], price=price[0][num], sell_estimate=sell_estimate[0][num], buy_estimate = buy_estimate[0][num])
             message.append(note)
         final = '\n\n'.join(message)
     for id in userdata['User_id']:
@@ -83,9 +81,4 @@ def send_message():
 
 send_message()
 
-#print('chatbot is ready')
-start_handler = CommandHandler('start', start_command)
-updater.dispatcher.add_handler(start_handler)
 
-#updater.start_polling()
-#updater.idle()
