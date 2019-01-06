@@ -45,13 +45,14 @@ def send_message():
         today['BPS_mul'] = today['BPS'] * data[8]
         today['EPS_mul'] = today['EPS'] * data[9]
         today['low'] = today[['BPS_mul', 'EPS_mul']].min(axis=1)
-        today['A'] = today['low'] * data[10] / 100
-        today['sell_estimate'] = today['low'] + today['A']
-        today['buy_estimate'] = today['low'] - today['A']
-        today['mark'] = ((today['low'] + today['A']) < today['52_high']) & (
-                    (today['low'] - today['A']) < today['price'])
-        today['special'] = ((today['low'] + today['A']) < today['52_low']) & (
-                    (today['low'] - today['A']) < today['price'])
+        today['sell'] = today['low'] * (20 / 100) #data[10]
+        today['buy'] = today['low'] * (5 / 100) #data[11] : 아직 설정하지 않음
+        today['sell_estimate'] = today['low'] + today['sell']
+        today['buy_estimate'] = today['low'] - today['buy']
+        today['mark'] = ((today['low'] + today['sell']) < today['52_high']) & (
+                    (today['low'] - today['buy']) < today['price'])
+        today['special'] = ((today['low'] + today['sell']) < today['52_low']) & (
+                    (today['low'] - today['buy']) < today['price'])
         result = today[(today['자본유보율'] > data[1]) & (today['연매출'] > data[2]) & (today['부채비율'] < data[3]) & (
                     (((today['자본금'] - today['자기자본(자본총계)']) / today['자본금']) * 100) < 0) & (today['PER'] < data[4]) & (
                                    today['PBR'] < data[5]) & (today['ROIC'] > data[6]) & (
