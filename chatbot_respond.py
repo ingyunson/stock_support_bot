@@ -32,7 +32,7 @@ def start_command(bot, update):
 
 
 def config(bot, update):
-    reply_keyboard = [['자본유보율', '연매출', '부채비율', 'PER', 'ROIC', 'ROE', 'BPS', 'EPS', '목표수익률']]
+    reply_keyboard = [['자본유보율', '연매출'], ['부채비율', 'PER'], ['ROIC', 'ROE'], ['BPS', 'EPS'], ['매수 마진', '매도 마진']['최초설정으로', '중단']]
 
     update.message.reply_text('이 명령은 설정을 변경하는 명령입니다.',
                               reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
