@@ -1,10 +1,9 @@
 import pandas as pd
 import datetime
 import telegram
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler,  MessageHandler, Filters, RegexHandler, ConversationHandler
 
-
-MESSAGE = range(1)
 
 def modify(user_id, cap = 200, ben = 300, debt = 100, per = 5, pbr = 1, roic = 5, roe = 5, bps = 1, eps = 5, interest = 5):
     if user_id in userdata['User_id'].values:
@@ -32,12 +31,15 @@ def start_command(bot, update):
 
 
 def config(bot, update):
-    reply_keyboard = [['자본유보율', '연매출'], ['부채비율', 'PER'], ['ROIC', 'ROE'], ['BPS', 'EPS'], ['매수 마진', '매도 마진']['최초설정으로', '중단']]
+    keyboard = [[InlineKeyboardButton("자본유보율", callback_data="cap"), InlineKeyboardButton("연매출", callback_data="ben"), InlineKeyboardButton("부채비율", callback_data="debt")],
+                [InlineKeyboardButton("PER", callback_data="per"), InlineKeyboardButton("PBR", callback_data="pbr"), InlineKeyboardButton("ROIC", callback_data="roic")],
+                [InlineKeyboardButton("ROE", callback_data="roe"), InlineKeyboardButton("EPS", callback_data="eps")],
+                [InlineKeyboardButton("매수적정가", callback_data="buy"), InlineKeyboardButton("매도적정가", callback_data="sell")],
+                [InlineKeyboardButton("cancel", callback_data="cancel")]]
 
-    update.message.reply_text('이 명령은 설정을 변경하는 명령입니다.',
-                              reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
-    return MESSAGE
+    update.message.reply_text('Please choose:', reply_markup=reply_markup)
 
 
 def message(bot, update):
@@ -49,7 +51,6 @@ def message(bot, update):
 
 def cancel(bot, update):
     user = update.message.from_user
-    logger.info("User %s canceled the conversation.", user.first_name)
     update.message.reply_text('Bye! I hope we can talk again some day.',
                               reply_markup=ReplyKeyboardRemove())
 
@@ -71,31 +72,11 @@ def main():
     updates = bot.getUpdates()  #업데이트 내역을 받아옵니다.
     dp = update.dispatcher
 
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('config', config)],
-
-        states={
-            MESSAGE: [RegexHandler('자본유보율', '연매출', '부채비율', 'PER', 'ROIC', 'ROE', 'BPS', 'EPS', '목표수익률', message)],
-
-        },
-
-        fallbacks=[CommandHandler('cancel', cancel)]
-    )
-
     print('chatbot is ready')
     start_handler = CommandHandler('start', start_command)
+    config_handler = CommandHandler('config', config)
+    dp.add_handler(config_handler)
     dp.add_handler(start_handler)
-    dp.add_handler(conv_handler)
-
-    update.start_polling()
-    update.idle()
-
-
-
-
-    print('chatbot is ready')
-    start_handler = CommandHandler('start', start_command)
-    updater.dispatcher.add_handler(start_handler)
 
     updater.start_polling()
     updater.idle()
