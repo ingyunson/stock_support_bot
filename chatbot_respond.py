@@ -29,19 +29,33 @@ def start_command(bot, update):
     print("start")
     update.message.reply_text("주식 투자 보조용 챗봇입니다.\n'/join' 혹은 '/시작'을 입력하시면 정보를 등록합니다.")
 
+def cancel(bot, update):
+    user = update.message.from_user
+    update.message.reply_text('Bye! I hope we can talk again some day.')
 
-def config(bot, update):
-    keyboard = [[InlineKeyboardButton("자본유보율", callback_data="자본유보율"), InlineKeyboardButton("연매출", callback_data="연매출"), InlineKeyboardButton("부채비율", callback_data="부채비율")],
-                [InlineKeyboardButton("PER", callback_data="PER"), InlineKeyboardButton("PBR", callback_data="PBR"), InlineKeyboardButton("ROIC", callback_data="ROIC")],
+    return ConversationHandler.END
+
+def start_command(bot, update):
+    print("start")
+    update.message.reply_text("주식 투자 보조용 챗봇입니다.\n'/join' 혹은 '/시작'을 입력하시면 정보를 등록합니다.")
+
+def set(bot, update):
+    keyboard = [[InlineKeyboardButton("자본유보율", callback_data="자본유보율"), InlineKeyboardButton("연매출", callback_data="연매출"),
+                 InlineKeyboardButton("부채비율", callback_data="부채비율")],
+                [InlineKeyboardButton("PER", callback_data="PER"), InlineKeyboardButton("PBR", callback_data="PBR"),
+                 InlineKeyboardButton("ROIC", callback_data="ROIC")],
                 [InlineKeyboardButton("ROE", callback_data="ROE"), InlineKeyboardButton("EPS", callback_data="EPS")],
-                [InlineKeyboardButton("매수적정가", callback_data="매수적정가"), InlineKeyboardButton("매도적정가", callback_data="매도적정가")],
+                [InlineKeyboardButton("매수적정가", callback_data="매수적정가"),
+                 InlineKeyboardButton("매도적정가", callback_data="매도적정가")],
                 [InlineKeyboardButton("cancel", callback_data="cancel")]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text('Please choose:', reply_markup=reply_markup)
+    update.message.reply_text('수정하고자 하는 항목을 선택해주세요:', reply_markup=reply_markup)
+
+    return SET_VALUE
 
 
-def callback_set(bot, update):
+def set_value(bot, update):
     print("callback")
     cb = update.callback_query.data
     if cb in userdata.columns:
@@ -52,21 +66,18 @@ def callback_set(bot, update):
         bot.edit_message_text(text="잘못된 입력입니다.", chat_id=update.callback_query.message.chat_id,
                               message_id=update.callback_query.message.message_id)
 
-
-def message(bot, update):
-    user = update.message.from_user
-    update.message.reply_text('ㅇㅇㅇ 명령을 수정합니다.', reply_markup=ReplyKeyboardRemove())
-
     return ConversationHandler.END
 
 
-def cancel(bot, update):
-    user = update.message.from_user
-    update.message.reply_text('Bye! I hope we can talk again some day.',
-                              reply_markup=ReplyKeyboardRemove())
+conv_handler = ConversationHandler(
+    entry_points=[CommandHandler('set', set)],
 
-    return ConversationHandler.END
+    states={
+        SET_VALUE: [RegexHandler('^(자본유보율|연매출|부채비율|PER|PBR|ROIC|ROE|EPS|매수적정가|매도적정가)$', set_value)],
+    },
 
+    fallbacks=[CommandHandler('cancel', cancel)]
+)
 
 
 def main():
@@ -76,7 +87,7 @@ def main():
     now = datetime.datetime.now()
     nowDate = now.strftime('%Y-%m-%d')
 
-    my_token = '729504243:AAFQEqyGx_yjOkSEBoNCUToP2KLH0VR-WX4'
+    my_token = <TELEGRAM BOT TOKEN>
     bot = telegram.Bot(token = my_token)   #bot을 선언합니다.
 
     update = Updater(my_token)
@@ -88,7 +99,7 @@ def main():
     config_handler = CommandHandler('set', set)
     dp.add_handler(config_handler)
     dp.add_handler(start_handler)
-    dp.add_handler(CallbackQueryHandler(callback_set))
+    dp.add_handler(conv_handler)
 
     updater.start_polling()
     updater.idle()
