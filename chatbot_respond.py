@@ -4,6 +4,7 @@ import telegram
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler,  MessageHandler, Filters, RegexHandler, ConversationHandler
 
+SET_VALUE = range(1)
 
 def modify(user_id, cap = 200, ben = 300, debt = 100, per = 5, pbr = 1, roic = 5, roe = 5, bps = 1, eps = 5, interest = 5):
     if user_id in userdata['User_id'].values:
@@ -31,7 +32,8 @@ def start_command(bot, update):
 
 def cancel(bot, update):
     user = update.message.from_user
-    update.message.reply_text('Bye! I hope we can talk again some day.')
+    update.message.reply_text('Bye! I hope we can talk again some day.',
+                              reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
 
@@ -52,12 +54,21 @@ def set(bot, update):
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text('수정하고자 하는 항목을 선택해주세요:', reply_markup=reply_markup)
 
-    return SET_VALUE
-
-
 def set_value(bot, update):
     print("callback")
     cb = update.callback_query.data
+    print(cb)
+
+    if cb == 'cancel':
+        bot.edit_message_text(text="취소하였습니다.", chat_id=update.callback_query.message.chat_id, message_id=update.callback_query.message.message_id)
+        print(update.callback_query.message.chat_id, update.callback_query.message.message_id)
+
+        return
+
+    if cb != 'cancel':
+        print(cb)
+
+    '''
     if cb in userdata.columns:
         bot.edit_message_text(text="{select}이(가) 선택되었습니다. {select}의 현재 설정값은 {num}입니다.".format(select=cb, num=100),
                               chat_id=update.callback_query.message.chat_id,
@@ -65,10 +76,10 @@ def set_value(bot, update):
     else:
         bot.edit_message_text(text="잘못된 입력입니다.", chat_id=update.callback_query.message.chat_id,
                               message_id=update.callback_query.message.message_id)
+    '''
 
-    return ConversationHandler.END
 
-
+'''
 conv_handler = ConversationHandler(
     entry_points=[CommandHandler('set', set)],
 
@@ -78,7 +89,7 @@ conv_handler = ConversationHandler(
 
     fallbacks=[CommandHandler('cancel', cancel)]
 )
-
+'''
 
 def main():
     userdata = pd.read_csv('user_db_test.csv')
@@ -87,7 +98,7 @@ def main():
     now = datetime.datetime.now()
     nowDate = now.strftime('%Y-%m-%d')
 
-    my_token = <TELEGRAM BOT TOKEN>
+    my_token = '492877807:AAEcHwvVyI8Sc9Bj31izc_cBanq0v4BZq24'
     bot = telegram.Bot(token = my_token)   #bot을 선언합니다.
 
     update = Updater(my_token)
@@ -99,10 +110,11 @@ def main():
     config_handler = CommandHandler('set', set)
     dp.add_handler(config_handler)
     dp.add_handler(start_handler)
-    dp.add_handler(conv_handler)
+    dp.add_handler(CallbackQueryHandler(set_value))
+    #dp.add_handler(conv_handler)
 
-    updater.start_polling()
-    updater.idle()
+    update.start_polling()
+    update.idle()
 
 if __name__ == '__main__':
     main()
