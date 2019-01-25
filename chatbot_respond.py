@@ -25,8 +25,15 @@ def modify(user_id, cap = 200, ben = 300, debt = 100, per = 5, pbr = 1, roic = 5
     return userdata
 
 
+#chatbot reply
 
-#chatvbot commands
+def get_message(bot, update):
+    print('notice message')
+    notice = '현재 사용할 수 있는 명령은 다음과 같습니다.\n\n/set : 사용자의 주식 알림 설정을 수정'
+    update.message.reply_text(notice)
+
+
+#chatvbot conversation
 
 
 def set(bot, update):
@@ -117,6 +124,9 @@ def main():
     )
 
     print('chatbot is ready')
+
+    message_handler = MessageHandler(Filters.text, get_message)
+    update.dispatcher.add_handler(message_handler)
 
     dp.add_handler(conv_handler)
     update.start_polling()
