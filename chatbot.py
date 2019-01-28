@@ -6,7 +6,7 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 now = datetime.datetime.now()
 nowDate = now.strftime('%Y-%m-%d')
 
-my_token = '729504243:AAFQEqyGx_yjOkSEBoNCUToP2KLH0VR-WX4'
+my_token = <CHATBOT TOKEN>
 bot = telegram.Bot(token = my_token)   #bot을 선언합니다.
 
 updater = Updater(my_token)
@@ -62,33 +62,35 @@ def send_message():
         price = []
         sell_estimate = []
         buy_estimate = []
-    final = []
-    message = ['{}의 선정 주식은 다음과 같습니다.'.format(nowDate)]
-    name.append(result['name'].values)
-    code.append(result['code_x'].values)
-    price.append(result['price'].values)
-    sell_estimate.append(result['sell_estimate'].values)
-    buy_estimate.append(result['buy_estimate'].values)
-    for num in range(len(name[0])):
-        note = "기업명 : {name}\nURL : https://finance.naver.com/item/main.nhn?code={code}\n전일종가 : {price}\n매수 적정가 : {buy_estimate}\n매도 적정가 : {sell_estimate}".format(
-            name=name[0][num], code=code[0][num], price=price[0][num], sell_estimate=sell_estimate[0][num],
-            buy_estimate=buy_estimate[0][num])
-        message.append(note)
-    if len(message) > 20:
-        temp_1 = '\n\n'.join(message[:20])
-        temp_2 = '\n\n'.join(message[20:])
-        final.append(temp_1)
-        final.append(temp_2)
-    else:
-        temp = '\n\n'.join(message)
-        final.append(temp)
+        final = []
+        message = ['{}의 선정 주식은 다음과 같습니다.'.format(nowDate)]
+        name.append(result['name'].values)
+        code.append(result['code_x'].values)
+        price.append(result['price'].values)
+        sell_estimate.append(result['sell_estimate'].values)
+        buy_estimate.append(result['buy_estimate'].values)
+        for num in range(len(name[0])):
+            note = "기업명 : {name}\nURL : https://finance.naver.com/item/main.nhn?code={code}\n전일종가 : {price}\n매수 적정가 : {buy_estimate}\n매도 적정가 : {sell_estimate}".format(
+                name=name[0][num], code=code[0][num], price=price[0][num], sell_estimate=sell_estimate[0][num],
+                buy_estimate=buy_estimate[0][num])
+            message.append(note)
+        if len(message) > 20:
+            temp_1 = '\n\n'.join(message[:20])
+            temp_2 = '\n\n'.join(message[20:])
+            final.append(temp_1)
+            final.append(temp_2)
+        else:
+            temp = '\n\n'.join(message)
+            final.append(temp)
 
-    for id in userdata['User_id']:
+        user_id = str(userdata.loc[i]['User_id'])
+        print(user_id)
+
         try:
             for i in range(len(final)):
-                bot.sendMessage(chat_id=id, text=final[i])
+                bot.sendMessage(chat_id=user_id, text=final[i])
         except Exception as e:
-            bot.sendMessage(chat_id=68008527, text=id + e)
+            bot.sendMessage(chat_id=<ADMIN CHAT ID>, text=id + e)
 
 
 send_message()
