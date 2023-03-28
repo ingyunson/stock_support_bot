@@ -115,7 +115,7 @@ def main():
     now = datetime.datetime.now()
     nowDate = now.strftime('%Y-%m-%d')
 
-    my_token = '492877807:AAEcHwvVyI8Sc9Bj31izc_cBanq0v4BZq24'
+    my_token = '[TELEGRAM API Key]'
     bot = telegram.Bot(token = my_token)   #bot을 선언합니다.
 
     update = Updater(my_token)
